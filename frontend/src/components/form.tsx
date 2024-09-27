@@ -29,7 +29,7 @@ function Form(){
       form.handleSubmit()
     }}
     >
-      <Card className=' bg-transparent backdrop-blur-xl text-white border border-ring'>
+      <Card className='bg-transparent backdrop-blur-xl text-white border border-ring'>
         <CardHeader className='text-white'>
           <CardTitle className='text-2xl'>FERTIGATION FORM</CardTitle>
           <CardDescription className='text-white'>Enter the values</CardDescription>
