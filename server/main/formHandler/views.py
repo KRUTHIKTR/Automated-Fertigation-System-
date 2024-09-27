@@ -1,5 +1,6 @@
 import datetime
-
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -27,16 +28,23 @@ def get_weather(lat, long):
 
 
 @csrf_exempt
+@api_view(['POST'])
 def handleSubmit(request):
     data = ''
     if request.method == 'POST':
-        data = get_weather(13.6885, 75.2456)
+        lat = request.data.get('Latitude')
+        long = request.data.get('Longitude')
+        N = request.data.get('N')
+        P = request.data.get('P')
+        K = request.data.get('K')
+        pH = request.data.get('pH')
+        data = get_weather(lat, long)
         temp = data['main']['temp']
         humidity = data['main']['humidity']
         rainfall = data.get('rain', {}).get('1h', 0)
         print(temp)
         print(humidity)
         print(rainfall)
-    return JsonResponse(data)
+    return JsonResponse({'data': data})
 
 

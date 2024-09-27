@@ -3,24 +3,42 @@ import { Label } from '@/components/ui/label'
 import { useForm } from '@tanstack/react-form'
 import { Input } from '@/components/ui/input'
 import { Button } from './ui/button'
+import {useEffect} from "react";
+import axios from "axios";
+
 
 function Form(){
+
   const form = useForm({
     defaultValues: {
       N: 0,
       P: 0,
       K: 0,
-      Humidity:0,
-      pH:0,
-      Latitude:0,
-      Longitude:0
+      Humidity: 0,
+      pH: 0,
+      Latitude: 0,
+      Longitude: 0
 
     },
     onSubmit: async ({ value }) => {
-      // Do something with form data
-      console.log(value)
+      console.log(JSON.stringify(value))
+
+      try {
+        const response = await axios.post('http://localhost:8000/api/form', value);  // Use Axios to post data
+        console.log(response.data);  // Log response data
+      } catch (error) {
+        console.error('Error submitting form:', error);  // Handle error
+      }
     },
   })
+  useEffect(()=>{
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position)=>{
+        form.setFieldValue('Latitude',position.coords.latitude);
+        form.setFieldValue('Longitude', position.coords.longitude);
+      });
+    }
+  }, [])
   return(
     <form
     onSubmit={(e) => {
@@ -29,13 +47,13 @@ function Form(){
       form.handleSubmit()
     }}
     >
-      <Card className=' bg-transparent backdrop-blur-xl text-white border border-ring'>
+      <Card className='px-6 bg-transparent backdrop-blur-xl text-white border border-ring'>
         <CardHeader className='text-white'>
           <CardTitle className='text-2xl'>FERTIGATION FORM</CardTitle>
           <CardDescription className='text-white'>Enter the values</CardDescription>
         </CardHeader>
         
-        <CardContent className='grid grid-cols-3 gap-4'>
+        <CardContent className='grid grid-cols-2 gap-4 gap-x-8'>
           <form.Field
               name="N"
               children={(field) => (
@@ -82,7 +100,7 @@ function Form(){
               children={(field) => (
                 <>
                   <Label>
-                    Pottasium
+                    Potassium
                     <Input
                       className='mt-2'  
                       name={field.name}
@@ -99,9 +117,16 @@ function Form(){
             
             <form.Field
               name="pH"
+              validators={{
+                onChange: ({value}) =>
+                  value > 14 || value < 0 ? 'Invalid ' : undefined
+              }}
               children={(field) => (
                 <>
                   <Label>
+                    {field.state.meta.errors ? (
+                      <em role="alert">{field.state.meta.errors.join(', ')}</em>
+                    ) : undefined}
                     pH
                     <Input
                       className='mt-2'
@@ -111,6 +136,7 @@ function Form(){
                       type="number"
                       onChange={(e) => field.handleChange(e.target.valueAsNumber)}
                     />
+
                     </Label>
                   
                 </>
@@ -157,13 +183,21 @@ function Form(){
             />
             
         </CardContent>
-        <CardFooter>
-          <Button>Submit</Button>
-        </CardFooter>
+          <CardFooter>
+              <h1></h1>
+              <form.Subscribe
+                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  children={([canSubmit, isSubmitting]) => (
+                      <Button type="submit" disabled={!canSubmit}>
+                          {isSubmitting ? '...' : 'Submit'}
+                      </Button>
+                  )}
+              />
+          </CardFooter>
 
       </Card>
     </form>
-    
+
   )
 }
 
